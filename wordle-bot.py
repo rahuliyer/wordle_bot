@@ -1,20 +1,12 @@
 #! /usr/bin/python
 
 import random
+import pickle
 
 def get_word_list():
-    with open('/usr/share/dict/words') as f:
-        lines = f.readlines()
+    word_list = pickle.load(open("./word_list.pkl", "rb"))
 
-        word_list = set()
-        for word in lines:
-            word = word.strip()
-            word = word.lower()
-
-            if len(word) == 5:
-                word_list.add(word)
-
-        return word_list
+    return word_list
 
 class WordleBot:
     def __init__(self, word_list):
@@ -23,6 +15,7 @@ class WordleBot:
         self.letter2word = {}
         self.letterpos2word = {}
 
+        self.word_frequencies = pickle.load(open("./word_frequencies.pkl", "rb"))
         self.reset_state()
 
     def reset_state(self):
@@ -112,6 +105,17 @@ class WordleBot:
 
         return result
 
+    def pick_best_word(self, candidate_set):
+        best_frequency = -1
+        best_word = None
+
+        for word in candidate_set:
+            if self.word_frequencies[word] > best_frequency:
+                best_frequency = self.word_frequencies[word]
+                best_word = word
+
+        return best_word
+
     def play(self, word, verbose=False):
         guess = "stone"
         turns = 1
@@ -133,7 +137,7 @@ class WordleBot:
                 return turns
 
             candidate_set = self.generate_candidate_set()
-            guess = random.sample(candidate_set, 1)[0]
+            guess = self.pick_best_word(candidate_set)
 
             if verbose == True:
                 print("Next guess: %s" % guess)
@@ -153,16 +157,17 @@ class WordleBot:
         print("abbey in letterpos2word['b'][2]: %s" % str(word in self.letterpos2word['b'][2]))
         print("abbey in letterpos2word['b'][3]: %s" % str(word in self.letterpos2word['b'][3]))
 
-def evaluate_solution(bot, word_list):
-    plays = 5000
-    words = random.sample(word_list, plays)
-
+def evaluate_solution(bot, word_list, print_failed_words=True):
     sum = 0.0
     histogram = {}
+    failed_words = set()
 
-    for i in range(plays):
-        word = words[i]
+    for word in word_list:
+        bot.reset_state()
         turns = bot.play(word, False)
+
+        if turns > 6:
+            failed_words.add(word)
 
         sum += turns
         if turns not in histogram:
@@ -170,12 +175,30 @@ def evaluate_solution(bot, word_list):
         else:
             histogram[turns] += 1
 
-        bot.reset_state()
-
     for key in histogram:
         print("%d turns: %d" % (key, histogram[key]))
 
-    print("Average number of turns: %f" % (sum / plays))
+    print("Average number of turns: %f" % (sum / len(word_list)))
+
+    if print_failed_words:
+        print("Failed words: ")
+        for word in failed_words:
+            bot.reset_state()
+            turns = bot.play(word, True)
+            print("Number of turns: %d" % turns)
+
+def get_wordle_list():
+    wordles = set()
+    with open("./wordles.txt") as f:
+        lines = f.readlines()
+
+        for word in lines:
+            word = word.strip()
+            word = word.lower()
+
+            wordles.add(word)
+
+    return wordles
 
 if __name__ == "__main__":
     random.seed()
@@ -184,6 +207,4 @@ if __name__ == "__main__":
     bot = WordleBot(word_list)
     bot.process_word_list()
 
-#    evaluate_solution(bot, word_list)
-
-    print("Success! Guessed in %d turns" % bot.interactive_play())
+    evaluate_solution(bot, get_wordle_list())
