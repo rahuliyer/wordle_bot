@@ -207,4 +207,5 @@ if __name__ == "__main__":
     bot = WordleBot(word_list)
     bot.process_word_list()
 
-    evaluate_solution(bot, get_wordle_list())
+#    evaluate_solution(bot, get_wordle_list())
+    bot.interactive_play()
