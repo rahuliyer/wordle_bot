@@ -36,6 +36,7 @@ class WordleBot:
 
         self.incorrect_pos_letters = {}
         self.not_in_word = set()
+        self.in_word = set()
 
     def process_word_list(self):
         for word in self.word_list:
@@ -61,13 +62,16 @@ class WordleBot:
         for i in range(len(result)):
             if result[i] == 'G':
                 self.word_hash[i] = guess[i]
+                self.in_word.add(guess[i])
             elif result[i] == 'Y':
                 if guess[i] not in self.incorrect_pos_letters:
                     self.incorrect_pos_letters[guess[i]] = set()
 
                 self.incorrect_pos_letters[guess[i]].add(i)
+                self.in_word.add(guess[i])
             else:
-                self.not_in_word.add(guess[i])
+                if guess[i] not in self.in_word:
+                    self.not_in_word.add(guess[i])
 
     def generate_candidate_set(self):
         candidate_set = self.word_list.copy()
@@ -129,6 +133,7 @@ class WordleBot:
                 return turns
 
             candidate_set = self.generate_candidate_set()
+            print(candidate_set)
             guess = random.sample(candidate_set, 1)[0]
 
             if verbose == True:
