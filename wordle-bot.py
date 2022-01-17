@@ -133,7 +133,6 @@ class WordleBot:
                 return turns
 
             candidate_set = self.generate_candidate_set()
-            print(candidate_set)
             guess = random.sample(candidate_set, 1)[0]
 
             if verbose == True:
