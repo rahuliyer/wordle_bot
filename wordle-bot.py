@@ -113,7 +113,7 @@ class WordleBot:
         return result
 
     def play(self, word, verbose=False):
-        guess = "range"
+        guess = "stone"
         turns = 1
 
         if verbose == True:
