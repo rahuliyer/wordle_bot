@@ -14,6 +14,7 @@ class WordleBot:
 
         self.letter2word = {}
         self.letterpos2word = {}
+        self.letterfreq2word = {}
 
         self.word_frequencies = pickle.load(open("./word_frequencies.pkl", "rb"))
         self.reset_state()
@@ -33,6 +34,7 @@ class WordleBot:
 
     def process_word_list(self):
         for word in self.word_list:
+            letter_freq = {}
             for i in range(len(word)):
                 letter = word[i]
                 if letter not in self.letter2word:
@@ -47,6 +49,20 @@ class WordleBot:
                     self.letterpos2word[letter][i] = set()
 
                 self.letterpos2word[letter][i].add(word)
+
+                if letter not in letter_freq:
+                    letter_freq[letter] = 1
+                else:
+                    letter_freq[letter] +=1
+
+            for letter in letter_freq:
+                if letter not in self.letterfreq2word:
+                    self.letterfreq2word[letter] = {}
+
+                if letter_freq[letter] not in self.letterfreq2word:
+                    self.letterfreq2word[letter_freq[letter]] = set()
+
+                self.letterfreq2word[letter_freq[letter]].add(word)
 
     def update_state(self, guess, result):
         if result == "":
@@ -82,6 +98,10 @@ class WordleBot:
 
         for letter in self.not_in_word:
             candidate_set -= self.letter2word[letter]
+
+        for letter in self.incorrect_pos_letters:
+            if letter in self.not_in_word:
+                candidate_set &= self.letterfreq2word[letter][1]
 
         return candidate_set
 
@@ -157,14 +177,14 @@ class WordleBot:
         print("abbey in letterpos2word['b'][2]: %s" % str(word in self.letterpos2word['b'][2]))
         print("abbey in letterpos2word['b'][3]: %s" % str(word in self.letterpos2word['b'][3]))
 
-def evaluate_solution(bot, word_list, print_failed_words=True):
+def evaluate_solution(bot, word_list, print_failed_words=True, verbose=False):
     sum = 0.0
     histogram = {}
     failed_words = set()
 
     for word in word_list:
         bot.reset_state()
-        turns = bot.play(word, False)
+        turns = bot.play(word, verbose)
 
         if turns > 6:
             failed_words.add(word)
@@ -207,5 +227,6 @@ if __name__ == "__main__":
     bot = WordleBot(word_list)
     bot.process_word_list()
 
+    bot.play("wince", True)
 #    evaluate_solution(bot, get_wordle_list())
-    bot.interactive_play()
+#    bot.interactive_play()

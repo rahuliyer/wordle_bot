@@ -6,7 +6,8 @@ from copyreg import pickle
 import pickle
 
 def get_word_frequencies():
-    with open('./full_word_list.txt') as f:
+#    with open('./full_word_list.txt') as f:
+    with open('./wordle_2315.txt') as f:
         lines = f.readlines()
 
         word_list = set()
