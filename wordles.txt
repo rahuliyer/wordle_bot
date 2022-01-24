@@ -216,3 +216,5 @@ point
 prick
 robot
 wince
+crimp
+knoll

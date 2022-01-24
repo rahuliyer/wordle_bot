@@ -227,6 +227,6 @@ if __name__ == "__main__":
     bot = WordleBot(word_list)
     bot.process_word_list()
 
-    bot.play("wince", True)
+#    bot.play("crimp", True)
 #    evaluate_solution(bot, get_wordle_list())
-#    bot.interactive_play()
+    bot.interactive_play()
