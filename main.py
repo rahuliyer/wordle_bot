@@ -3,22 +3,21 @@
 import random
 import pickle
 
-def get_word_list():
-    word_list = pickle.load(open("./word_list.pkl", "rb"))
-
-    return word_list
-
 class WordleBot:
-    def __init__(self, word_list):
-        self.word_list = word_list
+    def get_word_list(self):
+        word_list = pickle.load(open("./word_list.pkl", "rb"))
+    
+        return word_list
+  
+    def init_state(self):
+      self.word_list = self.get_word_list()
+      self.letter2word = {}
+      self.letterpos2word = {}
+      self.letterfreq2word = {}
 
-        self.letter2word = {}
-        self.letterpos2word = {}
-        self.letterfreq2word = {}
-
-        self.word_frequencies = pickle.load(open("./word_frequencies.pkl", "rb"))
-        self.reset_state()
-
+      self.word_frequencies = pickle.load(open("./word_frequencies.pkl", "rb"))
+      self.reset_state()
+      
     def reset_state(self):
         self.word_hash = {
             0: None,
@@ -31,8 +30,11 @@ class WordleBot:
         self.incorrect_pos_letters = {}
         self.not_in_word = set()
         self.in_word = set()
+        self.guesses = set()
 
     def process_word_list(self):
+        self.init_state()
+      
         for word in self.word_list:
             letter_freq = {}
             for i in range(len(word)):
@@ -68,6 +70,8 @@ class WordleBot:
         if result == "":
             return
 
+        self.guesses.add(guess)
+      
         for i in range(len(result)):
             if result[i] == 'G':
                 self.word_hash[i] = guess[i]
@@ -103,6 +107,8 @@ class WordleBot:
             if letter in self.not_in_word:
                 candidate_set &= self.letterfreq2word[letter][1]
 
+        candidate_set -= self.guesses
+      
         return candidate_set
 
     def check4win(self):
@@ -236,15 +242,11 @@ def get_wordle_list():
 
 if __name__ == "__main__":
     random.seed()
-    word_list = get_word_list()
 
-    bot = WordleBot(word_list)
+    bot = WordleBot()
     bot.process_word_list()
 
-#    bot.play("other", True)
-#    evaluate_solution(bot, get_wordle_list())
+#    bot.play("abyss", True)
+    evaluate_solution(bot, get_wordle_list())
 #    bot.interactive_play()
-#    print(bot.generate_letter_freq("MADDY"))
-    print(bot.evaluate_guess("AGAPE", "SOARE"))
-    print(bot.evaluate_guess("DAWDY", "DADDY"))
-  
+#    print(bot.generate_letter_freq("MADDY"))  
