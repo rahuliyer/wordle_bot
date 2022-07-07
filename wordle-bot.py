@@ -137,7 +137,7 @@ class WordleBot:
         return best_word
 
     def play(self, word, verbose=False):
-        guess = "stone"
+        guess = "soare"
         turns = 1
 
         if verbose == True:
@@ -227,6 +227,6 @@ if __name__ == "__main__":
     bot = WordleBot(word_list)
     bot.process_word_list()
 
-#    bot.play("crimp", True)
+#    bot.play("other", True)
 #    evaluate_solution(bot, get_wordle_list())
     bot.interactive_play()
