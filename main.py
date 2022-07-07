@@ -112,16 +112,30 @@ class WordleBot:
 
         return True
 
+    def generate_letter_freq(self, word):
+      letter_freq = {}
+
+      for i in range(len(word)):
+        if word[i] in letter_freq:
+          letter_freq[word[i]] += 1
+        else:
+          letter_freq[word[i]] = 1
+
+      return letter_freq
+      
     def evaluate_guess(self, word, guess):
         result = ""
-
+        letter_freq = self.generate_letter_freq(word)
+      
         for i in range(len(guess)):
-            if guess[i] not in word:
+            if guess[i] not in word or letter_freq[guess[i]] == 0:
                 result += 'B'
             elif guess[i] == word[i]:
                 result += 'G'
+                letter_freq[guess[i]] -= 1
             else:
                 result += 'Y'
+                letter_freq[guess[i]] -= 1
 
         return result
 
@@ -229,4 +243,8 @@ if __name__ == "__main__":
 
 #    bot.play("other", True)
 #    evaluate_solution(bot, get_wordle_list())
-    bot.interactive_play()
+#    bot.interactive_play()
+#    print(bot.generate_letter_freq("MADDY"))
+    print(bot.evaluate_guess("AGAPE", "SOARE"))
+    print(bot.evaluate_guess("DAWDY", "DADDY"))
+  
