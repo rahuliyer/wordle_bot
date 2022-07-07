@@ -9,7 +9,7 @@ class WordleBot:
     
         return word_list
   
-    def init_state(self):
+    def __init__(self):
       self.word_list = self.get_word_list()
       self.letter2word = {}
       self.letterpos2word = {}
@@ -17,7 +17,7 @@ class WordleBot:
 
       self.word_frequencies = pickle.load(open("./word_frequencies.pkl", "rb"))
       self.reset_state()
-      
+          
     def reset_state(self):
         self.word_hash = {
             0: None,
@@ -32,40 +32,43 @@ class WordleBot:
         self.in_word = set()
         self.guesses = set()
 
+    def process_letter2word(self, letter, word):
+      if letter not in self.letter2word:
+        self.letter2word[letter] = set()
+
+      self.letter2word[letter].add(word)
+
+    def process_letterpos2word(self, letter, word, pos):
+      if letter not in self.letterpos2word:
+          self.letterpos2word[letter] = {}
+
+      if pos not in self.letterpos2word[letter]:
+          self.letterpos2word[letter][pos] = set()
+
+      self.letterpos2word[letter][pos].add(word)
+
+    def process_letterfreq2word(self, word):
+      letter_freq = self.generate_letter_freq(word)
+
+      for letter in letter_freq:
+        freq = letter_freq[letter]
+        if letter not in self.letterfreq2word:
+          self.letterfreq2word[letter] = {}
+
+        if freq not in self.letterfreq2word[letter]:
+          self.letterfreq2word[letter][freq] = set()
+
+        self.letterfreq2word[letter][freq].add(word)
+  
     def process_word_list(self):
-        self.init_state()
-      
         for word in self.word_list:
-            letter_freq = {}
             for i in range(len(word)):
                 letter = word[i]
-                if letter not in self.letter2word:
-                    self.letter2word[letter] = set()
+                self.process_letter2word(letter, word)              
+                self.process_letterpos2word(letter, word, i)
 
-                self.letter2word[letter].add(word)
-
-                if letter not in self.letterpos2word:
-                    self.letterpos2word[letter] = {}
-
-                if i not in self.letterpos2word[letter]:
-                    self.letterpos2word[letter][i] = set()
-
-                self.letterpos2word[letter][i].add(word)
-
-                if letter not in letter_freq:
-                    letter_freq[letter] = 1
-                else:
-                    letter_freq[letter] +=1
-
-            for letter in letter_freq:
-                if letter not in self.letterfreq2word:
-                    self.letterfreq2word[letter] = {}
-
-                if letter_freq[letter] not in self.letterfreq2word:
-                    self.letterfreq2word[letter_freq[letter]] = set()
-
-                self.letterfreq2word[letter_freq[letter]].add(word)
-
+            self.process_letterfreq2word(word)
+  
     def update_state(self, guess, result):
         if result == "":
             return
@@ -85,6 +88,36 @@ class WordleBot:
             else:
                 if guess[i] not in self.in_word:
                     self.not_in_word.add(guess[i])
+
+    def handle_green(self, letter, pos):
+      candidate_set = self.word_list.copy()
+
+      candidate_set &= self.letterpos2word[letter][pos]
+
+      return candidate_set
+
+    def handle_yellow(self, letter, pos):
+      candidate_set = set()
+
+      for i in range(0, 5):
+        if i != pos:
+          candidate_set |= self.letterpos2word[letter][i]
+
+      return candidate_set
+
+    def handle_black(self, letter, processing_state):
+      candidate_set = self.word_list.copy()
+
+      if letter not in processing_state:
+        candidate_set -= self.letter2word[letter]
+      else:
+        letter_freqs = self.letterfreq2word[letter]
+
+        for freq in letter_freqs:
+          if freq > processing_state[letter]:
+            candidate_set -= letter_freqs[freq]
+
+      return candidate_set
 
     def generate_candidate_set(self):
         candidate_set = self.word_list.copy()
