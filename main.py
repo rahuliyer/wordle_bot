@@ -146,7 +146,7 @@ class WordleBot:
 
         while True:
             if word == None:
-                result = raw_input("enter result: ")
+                result = input("enter result: ")
                 result = result.strip()
             else:
                 result = self.evaluate_guess(word, guess)
