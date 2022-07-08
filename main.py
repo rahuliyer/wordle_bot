@@ -5,9 +5,8 @@ import pickle
 
 class WordleBot:
     def get_word_list(self):
-        word_list = pickle.load(open("./word_list.pkl", "rb"))
-    
-        return word_list
+      with open("./word_list.pkl", "rb") as f:
+        return pickle.load(f)
   
     def __init__(self):
       self.word_list = self.get_word_list()
@@ -15,7 +14,9 @@ class WordleBot:
       self.letterpos2word = {}
       self.letterfreq2word = {}
 
-      self.word_frequencies = pickle.load(open("./word_frequencies.pkl", "rb"))
+      with open("./word_frequencies.pkl", "rb") as f:
+        self.word_frequencies = pickle.load(f)
+        
       self.reset_state()
           
     def reset_state(self):
