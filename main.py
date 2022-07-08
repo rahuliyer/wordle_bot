@@ -242,5 +242,5 @@ if __name__ == "__main__":
     bot.process_word_list()
 
 #    bot.play("abyss", True)
-    evaluate_solution(bot, get_wordle_list())
-#    bot.interactive_play()
+#    evaluate_solution(bot, get_wordle_list())
+    bot.interactive_play()
