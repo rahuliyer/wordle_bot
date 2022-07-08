@@ -204,5 +204,4 @@ class TestWordleBot(unittest.TestCase):
       'd': 2,
     })
 
-    expected = self.bot.word_list - set(['daddy'])
-    self.assertEqual(expected, res)
+    self.assertEqual(set(['paddy']), res)

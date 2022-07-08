@@ -19,18 +19,7 @@ class WordleBot:
       self.reset_state()
           
     def reset_state(self):
-        self.word_hash = {
-            0: None,
-            1: None,
-            2: None,
-            3: None,
-            4: None
-        }
-
-        self.incorrect_pos_letters = {}
-        self.not_in_word = set()
-        self.in_word = set()
-        self.guesses = set()
+        self.candidate_set = self.word_list.copy()
 
     def process_letter2word(self, letter, word):
       if letter not in self.letter2word:
@@ -69,26 +58,6 @@ class WordleBot:
 
             self.process_letterfreq2word(word)
   
-    def update_state(self, guess, result):
-        if result == "":
-            return
-
-        self.guesses.add(guess)
-      
-        for i in range(len(result)):
-            if result[i] == 'G':
-                self.word_hash[i] = guess[i]
-                self.in_word.add(guess[i])
-            elif result[i] == 'Y':
-                if guess[i] not in self.incorrect_pos_letters:
-                    self.incorrect_pos_letters[guess[i]] = set()
-
-                self.incorrect_pos_letters[guess[i]].add(i)
-                self.in_word.add(guess[i])
-            else:
-                if guess[i] not in self.in_word:
-                    self.not_in_word.add(guess[i])
-
     def handle_green(self, letter, pos):
       candidate_set = self.word_list.copy()
 
@@ -111,45 +80,38 @@ class WordleBot:
       if letter not in processing_state:
         candidate_set -= self.letter2word[letter]
       else:
-        letter_freqs = self.letterfreq2word[letter]
-
-        for freq in letter_freqs:
-          if freq > processing_state[letter]:
-            candidate_set -= letter_freqs[freq]
+        freq = processing_state[letter]
+        candidate_set &= self.letterfreq2word[letter][freq]
 
       return candidate_set
 
-    def generate_candidate_set(self):
-        candidate_set = self.word_list.copy()
+    def get_processing_state(self, guess, result):
+      processing_state = {}
 
-        for pos in self.word_hash:
-            if self.word_hash[pos] != None:
-                candidate_set &= self.letterpos2word[self.word_hash[pos]][pos]
+      for i in range(0, len(guess)):
+        if result[i] == 'G' or result[i] == 'Y':
+          if guess[i] not in processing_state:
+            processing_state[guess[i]] = 1
+          else:
+            processing_state[guess[i]] += 1
 
-        for letter in self.incorrect_pos_letters:
-            candidate_set &= self.letter2word[letter]
+      return processing_state
 
-        for letter in self.incorrect_pos_letters:
-            for pos in self.incorrect_pos_letters[letter]:
-                candidate_set -= self.letterpos2word[letter][pos]
+    def update_candidate_set(self, guess, result):
+      for i in range(0, len(guess)):
+        if result[i] == 'G':
+          self.candidate_set &= self.handle_green(guess[i], i)
+        elif result[i] == 'Y':
+          self.candidate_set &= self.handle_yellow(guess[i], i)
+        else:
+          self.candidate_set &= self.handle_black(
+            guess[i],
+            self.get_processing_state(guess, result)
+          )
 
-        for letter in self.not_in_word:
-            candidate_set -= self.letter2word[letter]
-
-        for letter in self.incorrect_pos_letters:
-            if letter in self.not_in_word:
-                candidate_set &= self.letterfreq2word[letter][1]
-
-        candidate_set -= self.guesses
+      self.candidate_set.discard(guess)
       
-        return candidate_set
-
-    def check4win(self):
-        for i in self.word_hash:
-            if self.word_hash[i] == None:
-                return False
-
-        return True
+      assert len(self.candidate_set) != 0
 
     def generate_letter_freq(self, word):
       letter_freq = {}
@@ -178,11 +140,11 @@ class WordleBot:
 
         return result
 
-    def pick_best_word(self, candidate_set):
+    def pick_best_word(self):
         best_frequency = -1
         best_word = None
 
-        for word in candidate_set:
+        for word in self.candidate_set:
             if self.word_frequencies[word] > best_frequency:
                 best_frequency = self.word_frequencies[word]
                 best_word = word
@@ -200,17 +162,16 @@ class WordleBot:
         while True:
             if word == None:
                 result = input("enter result: ")
-                result = result.strip()
+                result = result.upper().strip()
             else:
                 result = self.evaluate_guess(word, guess)
 
-            self.update_state(guess, result)
+            if result == "GGGGG":
+              return turns
 
-            if self.check4win():
-                return turns
+            self.update_candidate_set(guess, result)
 
-            candidate_set = self.generate_candidate_set()
-            guess = self.pick_best_word(candidate_set)
+            guess = self.pick_best_word()
 
             if verbose == True:
                 print("Next guess: %s" % guess)
