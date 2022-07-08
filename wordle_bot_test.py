@@ -205,3 +205,9 @@ class TestWordleBot(unittest.TestCase):
     })
 
     self.assertEqual(set(['paddy']), res)
+
+  def testCandidateSetExcludesGuess(self):
+    guess = "floss"
+    self.bot.update_candidate_set(guess, "GBBGB")
+
+    self.assertFalse(guess in self.bot.candidate_set)
