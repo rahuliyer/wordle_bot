@@ -20,6 +20,7 @@ def get_word_frequencies():
 
     print("Number of words in the word list: %d" % len(word_list))
 
+    total = 0.0
     with open('./unigram_freq.csv') as f:
         lines = f.readlines()
 
@@ -30,8 +31,9 @@ def get_word_frequencies():
             word, freq = line.split(',')
 
             word = word.lower()
-            freq = int(freq)
-
+            freq = float(freq)
+            total += freq
+          
             if word in word_list:
                 word_frequencies[word] = freq
 
@@ -41,7 +43,11 @@ def get_word_frequencies():
 
     for word in word_list:
         if word not in word_frequencies:
-            word_frequencies[word] = 1
+            word_frequencies[word] = 1.0
+            total += 1
+
+    for word in word_frequencies:
+      word_frequencies[word] /= total
 
     return word_list, word_frequencies
 
