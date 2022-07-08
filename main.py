@@ -2,8 +2,6 @@
 
 import random
 import pickle
-import math
-import os
 
 class WordleBot:
     def get_word_list(self):
@@ -15,7 +13,6 @@ class WordleBot:
       self.letter2word = {}
       self.letterpos2word = {}
       self.letterfreq2word = {}
-      self.word_scores = {}
 
       with open("./word_frequencies.pkl", "rb") as f:
         self.word_frequencies = pickle.load(f)
@@ -52,19 +49,6 @@ class WordleBot:
           self.letterfreq2word[letter][freq] = set()
 
         self.letterfreq2word[letter][freq].add(word)
-
-    def process_word_scores(self):
-      if os.path.exists('./word_scores.pkl'):
-        print("Found word_scores.pkl...")
-        with open('./word_scores.pkl', "rb") as f:
-          self.word_scores = pickle.load(f)
-      else:
-        print("word_scores.pkl not found. Calculating scores...")        
-        self.word_scores = self.score_words()
-        with open('./word_scores.pkl', "wb") as f:
-          print("Writing word_scores.pkl...")
-          pickle.dump(self.word_scores, f)
-
   
     def process_word_list(self):
         for word in self.word_list:
@@ -74,8 +58,6 @@ class WordleBot:
                 self.process_letterpos2word(letter, word, i)
 
             self.process_letterfreq2word(word)
-
-        self.process_word_scores()
   
     def handle_green(self, letter, pos):
       candidate_set = self.word_list.copy()
@@ -116,26 +98,19 @@ class WordleBot:
 
       return processing_state
 
-    def calculate_new_candidate_set(self, guess, result):
-      candidate_set = self.word_list.copy()
-
+    def update_candidate_set(self, guess, result):
       for i in range(0, len(guess)):
         if result[i] == 'G':
-          candidate_set &= self.handle_green(guess[i], i)
+          self.candidate_set &= self.handle_green(guess[i], i)
         elif result[i] == 'Y':
-          candidate_set &= self.handle_yellow(guess[i], i)
+          self.candidate_set &= self.handle_yellow(guess[i], i)
         else:
-          candidate_set &= self.handle_black(
+          self.candidate_set &= self.handle_black(
             guess[i],
             self.get_processing_state(guess, result)
           )
 
-      candidate_set.discard(guess)
-
-      return candidate_set
-
-    def update_candidate_set(self, guess, result):
-      self.candidate_set &= self.calculate_new_candidate_set(guess, result)
+      self.candidate_set.discard(guess)
       
       assert len(self.candidate_set) != 0
 
@@ -166,35 +141,19 @@ class WordleBot:
 
         return result
 
-    def score_words(self):
-      word_scores = {}
-      for guess in self.candidate_set:
-        cset_reduction = 0.0
-        for target in self.candidate_set:
-          result = self.evaluate_guess(target, guess)
-          candidate_set = self.calculate_new_candidate_set(guess, result)
-          cset_reduction += float(len(candidate_set)) / len(self.candidate_set)
-
-        cset_reduction /= len(self.candidate_set)
-        word_scores[guess] = math.log(cset_reduction) + math.log(self.word_frequencies[guess])
-
-        print("Score for %s: %f" % (guess, word_scores[guess]))
-
-      return word_scores
-
     def pick_best_word(self):
-        best_score = -1
+        best_frequency = -1
         best_word = None
-      
-        for word in self.candidate_set:          
-            if self.word_scores[word] > best_score:
-                best_score = self.word_scores[word]
+
+        for word in self.candidate_set:
+            if self.word_frequencies[word] > best_frequency:
+                best_frequency = self.word_frequencies[word]
                 best_word = word
 
         return best_word
 
     def play(self, word, verbose=False):
-        guess = self.pick_best_word() #"soare"
+        guess = "soare"
         turns = 1
 
         if verbose == True:
@@ -283,6 +242,5 @@ if __name__ == "__main__":
     bot.process_word_list()
 
 #    bot.play("abyss", True)
-#    evaluate_solution(bot, get_wordle_list())
-    bot.interactive_play()
-#    print(bot.generate_letter_freq("MADDY"))  
+    evaluate_solution(bot, get_wordle_list())
+#    bot.interactive_play()
