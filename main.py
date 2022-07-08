@@ -130,57 +130,57 @@ class WordleBot:
       letter_freq = self.generate_letter_freq(word)
     
       for i in range(len(guess)):
-          if guess[i] not in word or letter_freq[guess[i]] == 0:
-              result += 'B'
-          elif guess[i] == word[i]:
-              result += 'G'
-              letter_freq[guess[i]] -= 1
-          else:
-              result += 'Y'
-              letter_freq[guess[i]] -= 1
+        if guess[i] not in word or letter_freq[guess[i]] == 0:
+          result += 'B'
+        elif guess[i] == word[i]:
+          result += 'G'
+          letter_freq[guess[i]] -= 1
+        else:
+          result += 'Y'
+          letter_freq[guess[i]] -= 1
 
       return result
 
   def pick_best_word(self):
-      best_frequency = -1
-      best_word = None
+    best_frequency = -1
+    best_word = None
 
-      for word in self.candidate_set:
-          if self.word_frequencies[word] > best_frequency:
-              best_frequency = self.word_frequencies[word]
-              best_word = word
+    for word in self.candidate_set:
+      if self.word_frequencies[word] > best_frequency:
+        best_frequency = self.word_frequencies[word]
+        best_word = word
 
-      return best_word
+    return best_word
 
   def play(self, word, verbose=False):
-      guess = "soare"
-      turns = 1
+    guess = "soare"
+    turns = 1
+
+    if verbose == True:
+      print("Word: %s" % word)
+      print("Guess: %s" % guess)
+
+    while True:
+      if word == None:
+        result = input("enter result: ")
+        result = result.upper().strip()
+      else:
+        result = self.evaluate_guess(word, guess)
+
+      if result == "GGGGG":
+        return turns
+
+      self.update_candidate_set(guess, result)
+
+      guess = self.pick_best_word()
 
       if verbose == True:
-          print("Word: %s" % word)
-          print("Guess: %s" % guess)
+        print("Next guess: %s" % guess)
 
-      while True:
-          if word == None:
-              result = input("enter result: ")
-              result = result.upper().strip()
-          else:
-              result = self.evaluate_guess(word, guess)
-
-          if result == "GGGGG":
-            return turns
-
-          self.update_candidate_set(guess, result)
-
-          guess = self.pick_best_word()
-
-          if verbose == True:
-              print("Next guess: %s" % guess)
-
-          turns += 1
+      turns += 1
 
   def interactive_play(self):
-      return self.play(None, True)
+    return self.play(None, True)
 
 def evaluate_solution(bot, word_list, print_failed_words=True, verbose=False):
   sum = 0.0
@@ -188,40 +188,40 @@ def evaluate_solution(bot, word_list, print_failed_words=True, verbose=False):
   failed_words = set()
 
   for word in word_list:
-      bot.reset_state()
-      turns = bot.play(word, verbose)
+    bot.reset_state()
+    turns = bot.play(word, verbose)
 
-      if turns > 6:
-          failed_words.add(word)
+    if turns > 6:
+      failed_words.add(word)
 
-      sum += turns
-      if turns not in histogram:
-          histogram[turns] = 1
-      else:
-          histogram[turns] += 1
+    sum += turns
+    if turns not in histogram:
+      histogram[turns] = 1
+    else:
+      histogram[turns] += 1
 
   for key in histogram:
-      print("%d turns: %d" % (key, histogram[key]))
+    print("%d turns: %d" % (key, histogram[key]))
 
   print("Average number of turns: %f" % (sum / len(word_list)))
 
   if print_failed_words:
-      print("Failed words: ")
-      for word in failed_words:
-          bot.reset_state()
-          turns = bot.play(word, True)
-          print("Number of turns: %d" % turns)
+    print("Failed words: ")
+    for word in failed_words:
+      bot.reset_state()
+      turns = bot.play(word, True)
+      print("Number of turns: %d" % turns)
 
 def get_wordle_list():
   wordles = set()
   with open("./wordles.txt") as f:
-      lines = f.readlines()
+    lines = f.readlines()
 
-      for word in lines:
-          word = word.strip()
-          word = word.lower()
+    for word in lines:
+      word = word.strip()
+      word = word.lower()
 
-          wordles.add(word)
+      wordles.add(word)
 
   return wordles
 
