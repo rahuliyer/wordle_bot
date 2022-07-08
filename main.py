@@ -70,7 +70,7 @@ class WordleBot:
       candidate_set = set()
 
       for i in range(0, 5):
-        if i != pos:
+        if i != pos and i in self.letterpos2word[letter]:
           candidate_set |= self.letterpos2word[letter][i]
 
       return candidate_set
