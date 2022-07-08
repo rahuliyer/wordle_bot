@@ -178,7 +178,7 @@ class WordleBot:
         cset_reduction /= len(self.candidate_set)
         word_scores[guess] = math.log(cset_reduction) + math.log(self.word_frequencies[guess])
 
-        print("Score for %s: %f" % (guess, self.word_scores[guess]))
+        print("Score for %s: %f" % (guess, word_scores[guess]))
 
       return word_scores
 
