@@ -182,16 +182,6 @@ class WordleBot:
   def interactive_play(self):
       return self.play(None, True)
 
-  def test_preprocessing(self):
-      word = "abbey"
-
-      print("abbey in letter2word['a']: %s" % str(word in self.letter2word['a']))
-      print("abbey in letter2word['b']: %s" % str(word in self.letter2word['b']))
-      print("abbey in letter2word['x']: %s" % str(word in self.letter2word['x']))
-      print("abbey in letterpos2word['b'][1]: %s" % str(word in self.letterpos2word['b'][1]))
-      print("abbey in letterpos2word['b'][2]: %s" % str(word in self.letterpos2word['b'][2]))
-      print("abbey in letterpos2word['b'][3]: %s" % str(word in self.letterpos2word['b'][3]))
-
 def evaluate_solution(bot, word_list, print_failed_words=True, verbose=False):
   sum = 0.0
   histogram = {}
