@@ -51,13 +51,13 @@ class WordleBot:
       self.letterfreq2word[letter][freq].add(word)
 
   def process_word_list(self):
-      for word in self.word_list:
-          for i in range(len(word)):
-              letter = word[i]
-              self.process_letter2word(letter, word)              
-              self.process_letterpos2word(letter, word, i)
+    for word in self.word_list:
+      for i in range(len(word)):
+        letter = word[i]
+        self.process_letter2word(letter, word)              
+        self.process_letterpos2word(letter, word, i)
 
-          self.process_letterfreq2word(word)
+      self.process_letterfreq2word(word)
 
   def handle_green(self, letter, pos):
     candidate_set = self.word_list.copy()
